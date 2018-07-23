@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "babel": "babel index.js -o index_babel.js",
+    "start": "node index_babel.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/Lskkkk/AutoJest/issues"
   },
-  "homepage": "https://github.com/Lskkkk/AutoJest#readme"
+  "homepage": "https://github.com/Lskkkk/AutoJest#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0"
+  }
 }
