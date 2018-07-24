@@ -1,16 +1,16 @@
-import { getFuncParamList } from './Common';
+import { processParamName, getProcessParamNameList } from './MockDataCode';
 
-function getImportCode(path, func) {
-    return `import `;
+function getImportFuncCode(filePath, func) {
+    return `import {${func.name}} from '${filePath}';\n\n`;
 }
 
 function getTestCode(func) {
-    const funcParamList = getFuncParamList(func);
     const funcName = func.name;
-    const funParamString = funcParamList && funcParamList.length > 0 ? funcParamList.toString() : '';
-    return `test(\'test ${funcName}\', () => {\n    expect(${funcName}(${funParamString})).toEqual(result);\n});\n\n`;
+    const funParamString = getProcessParamNameList(func);
+    return `test(\'test ${funcName}\', () => {\n    expect(${funcName}(${funParamString})).toEqual(${processParamName(func.name, 'result')});\n});\n\n`;
 }
 
 export {
+    getImportFuncCode,
     getTestCode
 };
