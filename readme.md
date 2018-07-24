@@ -3,6 +3,7 @@
 * Example - 示例
 * Generater - 生成Jest代码的模块
 * IO - 封装各种输入输出操作的模块
+* Path - 抹平各种路径差异
 * Test - 单元测试
 * index.js - 入口
 

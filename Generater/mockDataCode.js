@@ -4,14 +4,21 @@ function processParamName(funcName, paramName) {
     return `test_${funcName}_${paramName}`;
 }
 
-function getProcessParamNameList(func) {
+function getProcessParamNameListToString(func) {
     const funcParamList = getFuncParamList(func);
-    return funcParamList.map((param) => processParamName(func.name, param)).toString();
+    let paramStr = '';
+    funcParamList.forEach((param, index) => {
+        if (index > 0) {
+            paramStr += ', ';
+        }
+        paramStr += processParamName(func.name, param);
+    });
+    return paramStr;
 }
 
 function getImportMockCode(filePath, func) {
-    let content = getProcessParamNameList(func);
-    content += `,${processParamName(func.name, 'result')}`;
+    let content = getProcessParamNameListToString(func);
+    content += `, ${processParamName(func.name, 'result')}`;
     return `import {${content}} from '${filePath}';\n\n`;
 }
 
@@ -28,12 +35,12 @@ function getMockDataCode(func) {
 }
 
 function getExportMockData(func) {
-    return `export {\n    ${getProcessParamNameList(func)},${processParamName(func.name, 'result')}\n};\n\n`;
+    return `export {\n    ${getProcessParamNameListToString(func)}, ${processParamName(func.name, 'result')}\n};\n\n`;
 }
 
 export {
     processParamName,
-    getProcessParamNameList,
+    getProcessParamNameListToString,
     getImportMockCode,
     getMockDataCode,
     getExportMockData

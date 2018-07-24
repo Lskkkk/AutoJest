@@ -15,7 +15,7 @@ import * as TestFuncs from './Example/SomeFunction';
     let mockDataCode = '';
 
     for (let i in TestFuncs) {
-        importFuncsCode += getImportFuncCode('./SomeFunction', TestFuncs[i]);
+        importFuncsCode += getImportFuncCode('./SomeFunction', TestFuncs[i], '../Example/SomeFunction');
         importMockDataCode += getImportMockCode('./SomeFunction.mock', TestFuncs[i]);
         testCode += getTestCode(TestFuncs[i]);
 
@@ -28,8 +28,18 @@ import * as TestFuncs from './Example/SomeFunction';
 })();
 
 // demo 2: export default
-// import * as TestDefaultFunc from './Example/DefaultFunction';
-// (function runDemo2() {
-//     writeFile('./Example/SomeFunction.test.js', getTestCode(TestDefaultFunc.default));
-//     // readFile('./Example/SomeFunction.test.js', (data) => console.log(data));
-// })();
+import * as TestDefaultFunc from './Example/DefaultFunction';
+(function runDemo2() {
+
+    // test.js的内容
+    const importFuncsCode = getImportFuncCode('./DefaultFunction', TestDefaultFunc.default, '../Example/DefaultFunction');
+    const importMockDataCode = getImportMockCode('./DefaultFunction.mock', TestDefaultFunc.default);
+    const testCode = getTestCode(TestDefaultFunc.default);
+
+    // mock.js的内容
+    const mockDataCode = getMockDataCode(TestDefaultFunc.default) + getExportMockData(TestDefaultFunc.default);
+
+    // 写入
+    writeFile('./Example/DefaultFunction.test.js', importFuncsCode + importMockDataCode + testCode);
+    writeFile('./Example/DefaultFunction.mock.js', mockDataCode);
+})();
