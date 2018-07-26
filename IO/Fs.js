@@ -10,7 +10,8 @@ function writeFile(path, content) {
 }
 
 function readFile(path, callBack) {
-    fs.readFile(path, (err, data) => {
+    fs.readFile(path, 'utf8', (err, data) => {
+        console.log(err);
         callBack(data);
     });
 }

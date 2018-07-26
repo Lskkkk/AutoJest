@@ -43,3 +43,12 @@ import * as TestDefaultFunc from './Example/DefaultFunction';
     writeFile('./Example/DefaultFunction.test.js', importFuncsCode + importMockDataCode + testCode);
     writeFile('./Example/DefaultFunction.mock.js', mockDataCode);
 })();
+
+
+// import { inspectRepeat } from './Inspect/InspectRepeat';
+// inspectRepeat('./Example/DefaultFunction.test.js', 'multiply', (hasRepeat) => {
+//     console.log(hasRepeat);
+// });
+
+import * as TestPath from './IO/Path';
+console.log(TestPath.getTestDirPath());
