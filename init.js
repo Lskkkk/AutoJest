@@ -50,5 +50,5 @@ import * as TestDefaultFunc from './Example/DefaultFunction';
 //     console.log(hasRepeat);
 // });
 
-import * as TestPath from './IO/Path';
+import * as TestPath from './Path/Path';
 console.log(TestPath.getTestDirPath());
