@@ -16,7 +16,31 @@ function readFile(path, callBack) {
     });
 }
 
+function isDirectory(path, callBack) {
+    fs.stat(path, function (err, stats) {
+        console.log(callBack(stats.isDirectory()));
+    });
+}
+
+function isFile(path, callBack) {
+    fs.stat(path, function (err, stats) {
+        console.log(callBack(stats.isFile()));
+    });
+}
+
+function traversingFileListInDir(path, callBack) {
+    fs.readdir(path,function(err, files){
+        if (err) {
+            return console.error(err);
+        }
+        files.forEach((fileName) => callBack(fileName));
+    });
+}
+
 export {
     writeFile,
-    readFile
+    readFile,
+    isDirectory,
+    isFile,
+    traversingFileListInDir
 };
