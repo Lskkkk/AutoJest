@@ -3,13 +3,12 @@ import { tryRequire } from './Common';
 
 function getImportFuncCode(filePath, func, realFilePath) {
     let code = '';
-    tryRequire(realFilePath, (requireResult) => {
-        if (!!requireResult.default) {
-            code = `import ${func.name} from '${filePath}';\n\n`;
-        } else {
-            code = `import {${func.name}} from '${filePath}';\n\n`;
-        }
-    });
+    const requireResult = tryRequire(realFilePath);
+    if (!!(requireResult && requireResult.default)) {
+        code = `import ${func.name} from '${filePath}';\n\n`;
+    } else {
+        code = `import {${func.name}} from '${filePath}';\n\n`;
+    }
     return code;
 }
 

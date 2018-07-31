@@ -1,4 +1,4 @@
-import multiply from './DefaultFunction';
+import multiply from './Default/DefaultFunction';
 
 import {test_multiply_a, test_multiply_b, test_multiply_result} from './DefaultFunction.mock';
 

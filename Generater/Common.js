@@ -8,13 +8,14 @@ function getFuncParamList(func) {
     return result;
 }
 
-function tryRequire(filePath, callback) {
+function tryRequire(filePath) {
     try {
         const defaultFunc = require(filePath);
-        callback(defaultFunc);
+        return defaultFunc;
     } catch (e) {
         console.error(e.message + ' in \'Generater/Common.js/tryRequire\'');
     }
+    return null;
 }
 
 export {

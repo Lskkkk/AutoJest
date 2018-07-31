@@ -1,6 +1,6 @@
-import {plus} from './SomeFunction';
+import {plus} from './Normal/SomeFunction';
 
-import {minus} from './SomeFunction';
+import {minus} from './Normal/SomeFunction';
 
 import {test_plus_a, test_plus_b, test_plus_result} from './SomeFunction.mock';
 

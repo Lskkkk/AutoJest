@@ -2,8 +2,7 @@
 * Config - 解析配置文件的模块
 * Example - 示例
 * Generater - 生成Jest代码的模块
-* IO - 封装各种输入输出操作的模块
-* Path - 抹平各种路径差异
+* File - 各种文件和路径操作
 * Test - 单元测试
 * index.js - 入口
 

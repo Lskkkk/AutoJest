@@ -1,11 +1,9 @@
 import { readFile } from '../IO/Fs';
 
-function inspectRepeat(filePath, funcName, callback) {
-    readFile(filePath, (data) => {
-        const reg = new RegExp(`test ${funcName}`);
-        const alreadyHasTest = reg.test(data.toString());
-        callback(alreadyHasTest);
-    });
+async function inspectRepeat(filePath, funcName) {
+    const readData = await readFile(filePath);
+    const reg = new RegExp(`test ${funcName}`);
+    return reg.test(readData.toString());
 }
 
 export {
