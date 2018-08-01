@@ -1,4 +1,4 @@
-import { getFuncParamList } from './common';
+import { getFuncParamList } from '../Common';
 
 function processParamName(funcName, paramName) {
     return `test_${funcName}_${paramName}`;

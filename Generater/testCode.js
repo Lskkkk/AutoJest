@@ -1,5 +1,5 @@
 import { processParamName, getProcessParamNameListToString } from './MockDataCode';
-import { tryRequire } from './Common';
+import { tryRequire } from '../Common';
 
 function getImportFuncCode(filePath, func, realFilePath) {
     let code = '';

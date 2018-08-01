@@ -1,4 +1,4 @@
-import * as SFILE from './File';
+import * as SF from './File';
 import * as GTC from './Generater/TestCode';
 import * as GMDC from './Generater/MockDataCode';
 
@@ -23,9 +23,9 @@ import * as GMDC from './Generater/MockDataCode';
     }
 
     // 写入
-    SFILE.writeFile('./Example/SomeFunction.test.js', importFuncsCode + importMockDataCode + testCode);
-    SFILE.writeFile('./Example/SomeFunction.mock.js', mockDataCode);
-})();
+    SF.writeFile('./Example/SomeFunction.test.js', importFuncsCode + importMockDataCode + testCode);
+    SF.writeFile('./Example/SomeFunction.mock.js', mockDataCode);
+});
 
 // demo 2: export default
 // import * as TestDefaultFunc from './Example/Default/DefaultFunction';
@@ -41,9 +41,9 @@ import * as GMDC from './Generater/MockDataCode';
     const mockDataCode = GMDC.getMockDataCode(TestDefaultFunc.default) + GMDC.getExportMockData(TestDefaultFunc.default);
 
     // 写入
-    SFILE.writeFile('./Example/DefaultFunction.test.js', importFuncsCode + importMockDataCode + testCode);
-    SFILE.writeFile('./Example/DefaultFunction.mock.js', mockDataCode);
-})();
+    SF.writeFile('./Example/DefaultFunction.test.js', importFuncsCode + importMockDataCode + testCode);
+    SF.writeFile('./Example/DefaultFunction.mock.js', mockDataCode);
+});
 
 
 /**
@@ -55,64 +55,74 @@ import * as GMDC from './Generater/MockDataCode';
  */
 const CODE_PATH = './Example';
 
-const main = async () => {
-    const codeRootPath = SFILE.getResolvePath(__dirname, CODE_PATH);
-    const testRootPath = SFILE.getResolvePath(__dirname, './Example/__test__');
-    const mockRootPath = SFILE.getResolvePath(testRootPath, './mock');
+const codeRootPath = SF.getResolvePath(CODE_PATH);
+const testRootPath = SF.getResolvePath('./Example/__test__');
+const mockRootPath = SF.joinPath(testRootPath, './mock');
 
-    const traversingCodeFile = async (currentCodePath) => {
-        if (!SFILE.isExist(currentCodePath)) return ;
-        if (SFILE.isDirectory(currentCodePath)) {
-            // 遍历文件夹下的每个文件
-            const dirFilePathList = SFILE.getDirFilePathList(currentCodePath);
-            dirFilePathList.forEach((filePath) => traversingCodeFile(filePath));
-        } else if (SFILE.isFile(currentCodePath)) {
-            // 检查对应的测试用例文件和mock数据文件
-            const currentTestPath = SFILE.combineDiffPath(currentCodePath, testRootPath);
-            const currentMockPath = SFILE.combineDiffPath(currentCodePath, mockRootPath);
-
-            const codeFunc = await Promise.resolve(import(currentCodePath));
-            if (!codeFunc) return ;
-            
-            if (codeFunc.default) {
-                // 走default export的文件
-                
-                // test.js的内容
-                const importFuncsCode = GTC.getImportFuncCode(currentCodePath, codeFunc.default, currentCodePath);
-                const importMockDataCode = GMDC.getImportMockCode(currentMockPath, codeFunc.default);
-                const testCode = GTC.getTestCode(codeFunc.default);
-
-                // mock.js的内容
-                const mockDataCode = GMDC.getMockDataCode(codeFunc.default) + GMDC.getExportMockData(codeFunc.default);
-
-                // 写入
-                SFILE.writeFile(currentTestPath, importFuncsCode + importMockDataCode + testCode);
-                SFILE.writeFile(currentMockPath, mockDataCode);
-            } else {
-                // 多个export
-                
-                // test.js的内容
-                let importFuncsCode = '';
-                let importMockDataCode = '';
-                let testCode = '';
-
-                // mock.js的内容
-                let mockDataCode = '';
-
-                for (let i in codeFunc) {
-                    importFuncsCode += GTC.getImportFuncCode(currentCodePath, codeFunc[i], currentCodePath);
-                    importMockDataCode += GMDC.getImportMockCode(currentMockPath, codeFunc[i]);
-                    testCode += GTC.getTestCode(codeFunc[i]);
-
-                    mockDataCode += GMDC.getMockDataCode(codeFunc[i]) + GMDC.getExportMockData(codeFunc[i]);
-                }
-
-                // 写入
-                SFILE.writeFile(currentTestPath, importFuncsCode + importMockDataCode + testCode);
-                SFILE.writeFile(currentMockPath, mockDataCode);
-            }
-        }
-    };
-
-    traversingCodeFile(codeRootPath);
+const traversingCodeFile = async (currentCodePath) => {
+    if (await !SF.isExist(currentCodePath)) return ;
+    if (await SF.isDirectory(currentCodePath)) {
+        // 遍历文件夹下的每个文件
+        const dirFilePathList = await SF.getDirFilePathList(currentCodePath);
+        dirFilePathList.forEach((filePath) => traversingCodeFile(filePath));
+    } else if (await SF.isFile(currentCodePath)) {
+        writeCodeByFile(currentCodePath);
+    }
 };
+
+const writeCodeByFile = async (currentCodePath) => {
+    // 检查对应的测试用例文件和mock数据文件
+    const currentTestPath = SF.combineDiffPath(currentCodePath, testRootPath);
+    const currentMockPath = SF.combineDiffPath(currentCodePath, mockRootPath);
+
+    const codeFunc = await Promise.resolve(import(currentCodePath));
+    if (!codeFunc) return ;
+
+    // test.js的内容
+    let importFuncsCode = '';
+    let importMockDataCode = '';
+    let testCode = '';
+
+    // mock.js的内容
+    let mockDataCode = '';
+
+    // todo: 这里生成的代码是使用的绝对路径，需要替换为相对路径
+    const setCodeContentByFunc = (afunc) => {
+        importFuncsCode += GTC.getImportFuncCode(currentCodePath, afunc, currentCodePath);
+        importMockDataCode += GMDC.getImportMockCode(currentMockPath, afunc);
+        testCode += GTC.getTestCode(afunc);
+
+        mockDataCode += GMDC.getMockDataCode(afunc) + GMDC.getExportMockData(afunc);
+    };
+    
+    if (codeFunc.default) {
+        // 走default export的文件
+        setCodeContentByFunc(codeFunc.default);
+    } else {
+        // 多个export
+        for (let i in codeFunc) {
+            setCodeContentByFunc(codeFunc[i]);
+        }
+    }
+
+    // 写入
+    SF.writeFile(currentTestPath, importFuncsCode + importMockDataCode + testCode);
+    SF.writeFile(currentMockPath, mockDataCode);
+};
+
+traversingCodeFile(codeRootPath);
+
+// (
+//     async function () {
+//         // const ddd = await SF.isExist(codeRootPath + '/1.txt');
+//         // console.log(ddd);
+
+//         // const codeFunc = await Promise.resolve(import(codeRootPath + '/Normal/SomeFunction.js'));
+//         // for (let i in codeFunc) {
+//         //     console.log(GTC.getImportFuncCode(codeRootPath, codeFunc[i], codeRootPath));
+//         // }
+
+//         // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
+//     }
+// )();
+

@@ -18,7 +18,17 @@ function tryRequire(filePath) {
     return null;
 }
 
+function result(aPromise) {
+    return aPromise
+        .then((data) => data)
+        .catch((err) => {
+            console.error('调用promise发生错误: ' + err.message);
+            return null;
+        });
+}
+
 export {
     getFuncParamList,
-    tryRequire
+    tryRequire,
+    result
 };
