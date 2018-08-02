@@ -44,12 +44,12 @@ const writeCodeByFile = async (currentCodePath) => {
     let mockDataCode = '';
 
     // 写入测试文件中的引入路径要使用相对路径
-    const codeFileRelativePath = SF.getRelativePath(currentCodePath, currentTestPath);
-    const mockFileRelativePath = SF.getRelativePath(currentMockPath, currentTestPath);
+    const codeFileRelativePath = SF.getRelativeFilePath(currentCodePath, currentTestPath);
+    const mockFileRelativePath = SF.getRelativeFilePath(currentMockPath, currentTestPath);
 
     // 针对一个函数生成测试代码和数据代码
-    const setCodeContentByFunc = (afunc) => {
-        importFuncsCode += GTC.getImportFuncCode(codeFileRelativePath, afunc, currentCodePath);
+    const setCodeContentByFunc = (afunc, isDefaultExport = false) => {
+        importFuncsCode += GTC.getImportFuncCode(codeFileRelativePath, afunc, isDefaultExport);
         importMockDataCode += GMDC.getImportMockCode(mockFileRelativePath, afunc);
         testCode += GTC.getTestCode(afunc);
 
@@ -59,7 +59,7 @@ const writeCodeByFile = async (currentCodePath) => {
     // 分为export default和多个export的两种情况
     if (codeFunc.default) {
         // 走default export的文件
-        setCodeContentByFunc(codeFunc.default);
+        setCodeContentByFunc(codeFunc.default, true);
     } else {
         // 多个export
         for (let i in codeFunc) {
@@ -86,7 +86,8 @@ traversingCodeFile(codeRootPath);
 
 //         // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
 
-//         // console.log(SF.getRelativePath('./Example/__test__/Normal/SomeFunction/Pop.js', './Example/__test__/Normal/SomeFunction/Lib.js'));
+//         // console.log(SF.getRelativeFilePath('./Example/__test__/Normal/SomeFunction/Pop.js', './Example/__test__/Normal/SomeFunction/Lib.js') === './Pop.js');
+//         // console.log(SF.getRelativeFilePath('/Users/liushukun/Desktop/AutoJest/Example/Default/DefaultFunction.js', '/Users/liushukun/Desktop/AutoJest/Example/__test__/Default/DefaultFunction.test.js') === '../../Default/DefaultFunction.js');
 //     }
 // )();
 

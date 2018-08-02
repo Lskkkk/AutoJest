@@ -100,8 +100,8 @@ function getDirPath(filePath) {
 }
 
 /**
- * 在文件路径中插入传入的单词, 如果是文件夹，就返回此文件夹路径
- * 如：('./src/format.js', 'test') => './src/format.test.js'
+ * 在文件路径中插入传入的单词, 如果是文件夹，就返回此文件夹路径;
+ * 如：('./src/format.js', 'test') => './src/format.test.js';
  * @param {*} word 
  */
 function insertSuffixToPath(filePath, word) {
@@ -114,18 +114,37 @@ function insertSuffixToPath(filePath, word) {
 }
 
 /**
- * 生成sourcePath到targetPath的相对路径；
- * 如：('./src/Common/index.js', './src/Common/format.js') => './index.js'
- * 但path.relative()只会添加'..';辣鸡！需特殊判断两个文件路径的情况！
- * @param {*} sourcePath 
- * @param {*} targetPath 
+ * 生成sourceFilePath到targetFilePath的相对路径，只适用于文件路径;
+ * 如：('./src/Common/index.js', './src/Common/format.js') => './index.js';
+ * path.relative()只能作用于文件夹路径，因此写了这个方法作为补充;
+ * @param {*} sourceFilePath 
+ * @param {*} targetFilePath 
  */
-function getRelativePath(sourcePath, targetPath) {
-    let relativePath = path.relative(targetPath, sourcePath);
-    if (relativePath.match(/\//ig).length === 1 && !isDirPath(relativePath)) {
-        relativePath = relativePath.replace('..', '.');
+function getRelativeFilePath(sourceFilePath, targetFilePath) {
+
+    const sourcePathList = sourceFilePath.split('/').filter((w) => w !== '');
+    const targetPathList = targetFilePath.split('/').filter((w) => w !== '');
+    
+    let differentIndex = Math.min(sourcePathList.length, targetPathList.length);
+    for (let i = 0; i < differentIndex; i++) {
+        if (sourcePathList[i] !== targetPathList[i]) {
+            differentIndex = i;
+            break;
+        }
     }
-    return relativePath;
+
+    // 返回单层文件路径，如 './index.js'
+    if (sourcePathList.length - differentIndex === 1) {
+        return `./${sourcePathList[differentIndex]}`;
+    }
+
+    // 返回多层路径，使用'../'
+    let outPutList = [];
+    for (let i = targetPathList.length - 1; i > differentIndex; i--) {
+        outPutList.push('..');
+    }
+    outPutList = outPutList.concat(sourcePathList.slice(differentIndex));
+    return outPutList.join('/');
 }
 
 export {
@@ -142,5 +161,5 @@ export {
     combineDiffPath,
     getDirPath,
     insertSuffixToPath,
-    getRelativePath
+    getRelativeFilePath
 };
