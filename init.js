@@ -57,36 +57,37 @@ const CODE_PATH = './Example';
 
 const codeRootPath = SF.getResolvePath(CODE_PATH);
 const testRootPath = SF.getResolvePath('./Example/__test__');
-const mockRootPath = SF.joinPath(testRootPath, './mock');
 
 const traversingCodeFile = async (currentCodePath) => {
-    if (await !SF.isExist(currentCodePath)) return ;
-    if (await SF.isDirectory(currentCodePath)) {
+    if (await SF.isExistDirectory(currentCodePath)) {
         // 遍历文件夹下的每个文件
         const dirFilePathList = await SF.getDirFilePathList(currentCodePath);
         dirFilePathList.forEach((filePath) => traversingCodeFile(filePath));
-    } else if (await SF.isFile(currentCodePath)) {
+    } else if (await SF.isExistFile(currentCodePath)) {
         writeCodeByFile(currentCodePath);
     }
 };
 
 const writeCodeByFile = async (currentCodePath) => {
-    // 检查对应的测试用例文件和mock数据文件
-    const currentTestPath = SF.combineDiffPath(currentCodePath, testRootPath);
-    const currentMockPath = SF.combineDiffPath(currentCodePath, mockRootPath);
 
+    // 尝试引入待测试的文件
     const codeFunc = await Promise.resolve(import(currentCodePath));
     if (!codeFunc) return ;
 
-    // test.js的内容
+    // 生成对应的测试用例文件路径和mock数据文件路径
+    const currentTestPath = SF.insertSuffixToPath(SF.combineDiffPath(currentCodePath, testRootPath), 'test');
+    const currentMockPath = SF.insertSuffixToPath(SF.combineDiffPath(currentCodePath, testRootPath), 'mock');
+
+    // *.test.js的内容
     let importFuncsCode = '';
     let importMockDataCode = '';
     let testCode = '';
 
-    // mock.js的内容
+    // *.mock.js的内容
     let mockDataCode = '';
 
     // todo: 这里生成的代码是使用的绝对路径，需要替换为相对路径
+    // 针对一个函数生成测试代码和数据代码
     const setCodeContentByFunc = (afunc) => {
         importFuncsCode += GTC.getImportFuncCode(currentCodePath, afunc, currentCodePath);
         importMockDataCode += GMDC.getImportMockCode(currentMockPath, afunc);
@@ -95,6 +96,7 @@ const writeCodeByFile = async (currentCodePath) => {
         mockDataCode += GMDC.getMockDataCode(afunc) + GMDC.getExportMockData(afunc);
     };
     
+    // 分为export default和多个export的两种情况
     if (codeFunc.default) {
         // 走default export的文件
         setCodeContentByFunc(codeFunc.default);
@@ -123,6 +125,8 @@ traversingCodeFile(codeRootPath);
 //         // }
 
 //         // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
+
+//         // console.log(SF.insertSuffixToPath('./src/format', 'test'));
 //     }
 // )();
 

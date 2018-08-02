@@ -21,13 +21,13 @@ async function readFile(filePath) {
     return await result(promiseReadFile(filePath, 'utf8'));
 }
 
-async function isDirectory(filePath) {
+async function isExistDirectory(filePath) {
     const stats = await result(promiseStats(filePath));
     return stats && stats.isDirectory();
 }
 
 // todo: 判断是否是js
-async function isFile(filePath) {
+async function isExistFile(filePath) {
     const stats = await result(promiseStats(filePath));
     return stats && stats.isFile();
 }
@@ -42,9 +42,9 @@ async function mkDir(filePath) {
     const splitPathList = dirPath.split('/');
     let currentPath = '';
 
-    for (const sp of splitPathList) {
+    for (const sp of splitPathList) { // foreach对await无用
         if (sp === '') continue;
-        
+
         currentPath += '/' + sp;
         const isDirExist = await isExist(currentPath);
         if (!isDirExist) {
@@ -82,24 +82,42 @@ function combineDiffPath(sourcePath, targetPath) {
             sourcePath.charAt(diffIndex) === targetPath.charAt(diffIndex)) {
         diffIndex++;
     }
-    return path.join(targetPath, sourcePath.substring(diffIndex, sourcePath.length));
+    return path.join(targetPath, sourcePath.slice(diffIndex));
+}
+
+function isDirPath(filePath) {
+    const extName = path.extname(filePath);
+    return extName === '';
 }
 
 // 返回文件夹路径
 function getDirPath(filePath) {
-    const extName = path.extname(filePath);
-    if (extName === '') {
+    if (isDirPath(filePath)) {
         return filePath;
     } else {
-        return filePath.substring(0, filePath.lastIndexOf('/'));
+        return filePath.slice(0, filePath.lastIndexOf('/'));
+    }
+}
+
+/**
+ * 在文件路径中插入传入的单词, 如果是文件夹，就返回此文件夹路径
+ * 如：('./src/format.js', 'test') => './src/format.test.js'
+ * @param {*} word 
+ */
+function insertSuffixToPath(filePath, word) {
+    if (isDirPath(filePath)) {
+        return filePath;
+    } else {
+        const lastPointIndex = filePath.lastIndexOf('.');
+        return filePath.slice(0, lastPointIndex) + '.' + word + filePath.slice(lastPointIndex);
     }
 }
 
 export {
     writeFile,
     readFile,
-    isDirectory,
-    isFile,
+    isExistDirectory,
+    isExistFile,
     isExist,
     mkDir,
 
@@ -107,5 +125,6 @@ export {
     joinPath,
     getDirFilePathList,
     combineDiffPath,
-    getDirPath
+    getDirPath,
+    insertSuffixToPath
 };
