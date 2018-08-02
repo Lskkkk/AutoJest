@@ -1,13 +1,15 @@
 import { processParamName, getProcessParamNameListToString } from './MockDataCode';
 import { tryRequire } from '../Common';
 
-function getImportFuncCode(filePath, func, realFilePath) {
-    let code = '';
+function getImportFuncCode(writtenFilePath, func, realFilePath) {
     const requireResult = tryRequire(realFilePath);
-    if (!!(requireResult && requireResult.default)) {
-        code = `import ${func.name} from '${filePath}';\n\n`;
+    if (!!requireResult) return '';
+
+    let code = '';
+    if (!!requireResult.default) {
+        code = `import ${func.name} from '${writtenFilePath}';\n\n`;
     } else {
-        code = `import {${func.name}} from '${filePath}';\n\n`;
+        code = `import {${func.name}} from '${writtenFilePath}';\n\n`;
     }
     return code;
 }

@@ -113,6 +113,21 @@ function insertSuffixToPath(filePath, word) {
     }
 }
 
+/**
+ * 生成sourcePath到targetPath的相对路径；
+ * 如：('./src/Common/index.js', './src/Common/format.js') => './index.js'
+ * 但path.relative()只会添加'..';辣鸡！需特殊判断两个文件路径的情况！
+ * @param {*} sourcePath 
+ * @param {*} targetPath 
+ */
+function getRelativePath(sourcePath, targetPath) {
+    let relativePath = path.relative(targetPath, sourcePath);
+    if (relativePath.match(/\//ig).length === 1 && !isDirPath(relativePath)) {
+        relativePath = relativePath.replace('..', '.');
+    }
+    return relativePath;
+}
+
 export {
     writeFile,
     readFile,
@@ -126,5 +141,6 @@ export {
     getDirFilePathList,
     combineDiffPath,
     getDirPath,
-    insertSuffixToPath
+    insertSuffixToPath,
+    getRelativePath
 };

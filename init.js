@@ -2,50 +2,6 @@ import * as SF from './File';
 import * as GTC from './Generater/TestCode';
 import * as GMDC from './Generater/MockDataCode';
 
-// demo 1: 多个export
-(async function runDemo1() {
-    const TestFuncs = await Promise.resolve(import('./Example/Normal/SomeFunction'));
-
-    // test.js的内容
-    let importFuncsCode = '';
-    let importMockDataCode = '';
-    let testCode = '';
-
-    // mock.js的内容
-    let mockDataCode = '';
-
-    for (let i in TestFuncs) {
-        importFuncsCode += GTC.getImportFuncCode('./Normal/SomeFunction', TestFuncs[i], '../Example/Normal/SomeFunction');
-        importMockDataCode += GMDC.getImportMockCode('./SomeFunction.mock', TestFuncs[i]);
-        testCode += GTC.getTestCode(TestFuncs[i]);
-
-        mockDataCode += GMDC.getMockDataCode(TestFuncs[i]) + GMDC.getExportMockData(TestFuncs[i]);
-    }
-
-    // 写入
-    SF.writeFile('./Example/SomeFunction.test.js', importFuncsCode + importMockDataCode + testCode);
-    SF.writeFile('./Example/SomeFunction.mock.js', mockDataCode);
-});
-
-// demo 2: export default
-// import * as TestDefaultFunc from './Example/Default/DefaultFunction';
-(async function runDemo2() {
-    const TestDefaultFunc = await Promise.resolve(import('./Example/Default/DefaultFunction'));
-
-    // test.js的内容
-    const importFuncsCode = GTC.getImportFuncCode('./Default/DefaultFunction', TestDefaultFunc.default, '../Example/Default/DefaultFunction');
-    const importMockDataCode = GMDC.getImportMockCode('./DefaultFunction.mock', TestDefaultFunc.default);
-    const testCode = GTC.getTestCode(TestDefaultFunc.default);
-
-    // mock.js的内容
-    const mockDataCode = GMDC.getMockDataCode(TestDefaultFunc.default) + GMDC.getExportMockData(TestDefaultFunc.default);
-
-    // 写入
-    SF.writeFile('./Example/DefaultFunction.test.js', importFuncsCode + importMockDataCode + testCode);
-    SF.writeFile('./Example/DefaultFunction.mock.js', mockDataCode);
-});
-
-
 /**
  * 模拟自动初始化的方法
  * 1. 读取待测文件目录；
@@ -74,9 +30,10 @@ const writeCodeByFile = async (currentCodePath) => {
     const codeFunc = await Promise.resolve(import(currentCodePath));
     if (!codeFunc) return ;
 
+    const currentTestFileResolvedPath = SF.combineDiffPath(currentCodePath, testRootPath);
     // 生成对应的测试用例文件路径和mock数据文件路径
-    const currentTestPath = SF.insertSuffixToPath(SF.combineDiffPath(currentCodePath, testRootPath), 'test');
-    const currentMockPath = SF.insertSuffixToPath(SF.combineDiffPath(currentCodePath, testRootPath), 'mock');
+    const currentTestPath = SF.insertSuffixToPath(currentTestFileResolvedPath, 'test');
+    const currentMockPath = SF.insertSuffixToPath(currentTestFileResolvedPath, 'mock');
 
     // *.test.js的内容
     let importFuncsCode = '';
@@ -86,11 +43,14 @@ const writeCodeByFile = async (currentCodePath) => {
     // *.mock.js的内容
     let mockDataCode = '';
 
-    // todo: 这里生成的代码是使用的绝对路径，需要替换为相对路径
+    // 写入测试文件中的引入路径要使用相对路径
+    const codeFileRelativePath = SF.getRelativePath(currentCodePath, currentTestPath);
+    const mockFileRelativePath = SF.getRelativePath(currentMockPath, currentTestPath);
+
     // 针对一个函数生成测试代码和数据代码
     const setCodeContentByFunc = (afunc) => {
-        importFuncsCode += GTC.getImportFuncCode(currentCodePath, afunc, currentCodePath);
-        importMockDataCode += GMDC.getImportMockCode(currentMockPath, afunc);
+        importFuncsCode += GTC.getImportFuncCode(codeFileRelativePath, afunc, currentCodePath);
+        importMockDataCode += GMDC.getImportMockCode(mockFileRelativePath, afunc);
         testCode += GTC.getTestCode(afunc);
 
         mockDataCode += GMDC.getMockDataCode(afunc) + GMDC.getExportMockData(afunc);
@@ -126,7 +86,7 @@ traversingCodeFile(codeRootPath);
 
 //         // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
 
-//         // console.log(SF.insertSuffixToPath('./src/format', 'test'));
+//         // console.log(SF.getRelativePath('./Example/__test__/Normal/SomeFunction/Pop.js', './Example/__test__/Normal/SomeFunction/Lib.js'));
 //     }
 // )();
 
