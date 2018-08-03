@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const fs = require('fs');
 const path = require('path');
 
-const promiseWriteFile = Promise.promisify(fs.writeFile);
+const promiseWriteFile = Promise.promisify(fs.appendFile);
 const promiseReadFile = Promise.promisify(fs.readFile);
 const promiseStats = Promise.promisify(fs.stat);
 const promiseReadDir = Promise.promisify(fs.readdir);
@@ -147,6 +147,15 @@ function getRelativeFilePath(sourceFilePath, targetFilePath) {
     return outPutList.join('/');
 }
 
+/**
+ * 判断前一个路径是否属于后一个路径
+ * @param {*} filePath 
+ * @param {*} dirPath 
+ */
+function isPathBelong(filePath, dirPath) {
+    return getResolvePath(filePath).indexOf(getResolvePath(dirPath)) >= 0;
+}
+
 export {
     writeFile,
     readFile,
@@ -161,5 +170,6 @@ export {
     combineDiffPath,
     getDirPath,
     insertSuffixToPath,
-    getRelativeFilePath
+    getRelativeFilePath,
+    isPathBelong
 };

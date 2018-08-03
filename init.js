@@ -1,6 +1,8 @@
 import * as SF from './File';
 import * as GTC from './Generater/TestCode';
 import * as GMDC from './Generater/MockDataCode';
+import * as INSP from './Inspecter';
+import * as CFG from './Config';
 
 /**
  * 模拟自动初始化的方法
@@ -9,12 +11,13 @@ import * as GMDC from './Generater/MockDataCode';
  * 3. 针对每个文件，检查对应的测试用例文件和mock数据文件；若没有，就生成；
  * 4. 对每个文件中的函数进行遍历，检测对应测试文件中是否已经存在测试用例；若没有，就生成；
  */
-const CODE_PATH = './Example';
-
-const codeRootPath = SF.getResolvePath(CODE_PATH);
-const testRootPath = SF.getResolvePath('./Example/__test__');
+const CONFIG = CFG.getConfigObject();
+const codeRootPath = SF.getResolvePath(CONFIG.codeRootPath);
+const testRootPath = SF.joinPath(codeRootPath, '__Test__');
 
 const traversingCodeFile = async (currentCodePath) => {
+    if (!INSP.inspectAimFile(currentCodePath, CONFIG)) return ;
+
     if (await SF.isExistDirectory(currentCodePath)) {
         // 遍历文件夹下的每个文件
         const dirFilePathList = await SF.getDirFilePathList(currentCodePath);
@@ -55,15 +58,17 @@ const writeCodeByFile = async (currentCodePath) => {
 
         mockDataCode += GMDC.getMockDataCode(afunc) + GMDC.getExportMockData(afunc);
     };
+
+    const currentTestFileContent = await SF.readFile(currentTestPath);
     
     // 分为export default和多个export的两种情况
     if (codeFunc.default) {
         // 走default export的文件
-        setCodeContentByFunc(codeFunc.default, true);
+        !INSP.inspectRepeat(currentTestFileContent, codeFunc.default.name) ? setCodeContentByFunc(codeFunc.default, true) : null;
     } else {
         // 多个export
         for (let i in codeFunc) {
-            setCodeContentByFunc(codeFunc[i]);
+            !INSP.inspectRepeat(currentTestFileContent, codeFunc[i].name) ? setCodeContentByFunc(codeFunc[i]) : null;
         }
     }
 
@@ -74,20 +79,22 @@ const writeCodeByFile = async (currentCodePath) => {
 
 traversingCodeFile(codeRootPath);
 
-// (
-//     async function () {
-//         // const ddd = await SF.isExist(codeRootPath + '/1.txt');
-//         // console.log(ddd);
+(
+    async function () {
+        // const ddd = await SF.isExist(codeRootPath + '/1.txt');
+        // console.log(ddd);
 
-//         // const codeFunc = await Promise.resolve(import(codeRootPath + '/Normal/SomeFunction.js'));
-//         // for (let i in codeFunc) {
-//         //     console.log(GTC.getImportFuncCode(codeRootPath, codeFunc[i], codeRootPath));
-//         // }
+        // const codeFunc = await Promise.resolve(import(codeRootPath + '/Normal/SomeFunction.js'));
+        // for (let i in codeFunc) {
+        //     console.log(GTC.getImportFuncCode(codeRootPath, codeFunc[i], codeRootPath));
+        // }
 
-//         // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
+        // SF.writeFile(codeRootPath + '/Normal/Hello/World/index.js', '1212');
 
-//         // console.log(SF.getRelativeFilePath('./Example/__test__/Normal/SomeFunction/Pop.js', './Example/__test__/Normal/SomeFunction/Lib.js') === './Pop.js');
-//         // console.log(SF.getRelativeFilePath('/Users/liushukun/Desktop/AutoJest/Example/Default/DefaultFunction.js', '/Users/liushukun/Desktop/AutoJest/Example/__test__/Default/DefaultFunction.test.js') === '../../Default/DefaultFunction.js');
-//     }
-// )();
+        // console.log(SF.getRelativeFilePath('./Example/__test__/Normal/SomeFunction/Pop.js', './Example/__test__/Normal/SomeFunction/Lib.js') === './Pop.js');
+        // console.log(SF.getRelativeFilePath('/Users/liushukun/Desktop/AutoJest/Example/Default/DefaultFunction.js', '/Users/liushukun/Desktop/AutoJest/Example/__test__/Default/DefaultFunction.test.js') === '../../Default/DefaultFunction.js');
+
+        // console.log(INSP.inspectAimFile('./Example/__test__/Normal', ['./Example/__test__']));
+    }
+)();
 
